@@ -15,7 +15,7 @@
 [image8]: ./images/distribution_validation_set_after_augmentation.png "Distribution of classes in validation dataset after augmentation"
 [image9]: ./images/sample_images_after_normalization.png "Normalized images"
 [image10]: ./images/model_architecture.png "Model Architecture"
-
+[image11]: ./images/validation_accuracy.png "Validation Accuracy"
 ## Overview
 ---
 The main objective of this project is to classify traffic signs using a Convolutional Neural Network (CNN). The classification model is trained based on the data from [German Traffic Sign Dataset](http://benchmark.ini.rub.de/?section=gtsrb&subsection=dataset). Given an input image of size 32x32x3, the project would classify the image as belonging to one of the 43 possible classes. The solution is implemented using the `Tensorflow` deep learning library framework.
@@ -142,81 +142,105 @@ The LeNet architecture accepts a 32x32xC image as input, where C is the number o
 
 **Activation.** As before, to remove the non-linearity, a RELU activation layer is added.
 
-**Dropout.** Similar to layer 4, a dropout layer with 60% probability is added after the RELU activation layer.
+**Dropout.** Similar to layer 4, a dropout layer with `60% keep probability` is added after the RELU activation layer.
 
-**Layer 5: Fully Connected (Logits).** This final layer returns the un-normalized predictions (logits) of the model, with a **width of 43**, each representing the logit values for a particular class.
+**Layer 5: Fully Connected (Logits).** This final layer returns the un-normalized predictions (logits) of the model, with a **output of 43**, each representing the logit values for a particular class.
 
 #### Output
-The model return the logits from the layer 5. A softmax function should be run on this value to map the result between 0 to 1. This will be discussed later.
+The model return the logits from the layer 5. A `softmax` function should be run on this value to map the result between 0 to 1. This will be discussed later.
 
 #### Parameter Summary
 The table below summarizes the parameters of the model:
 
-|Layer (type)|Output Shape|Param #|
+|Layer|Output Shape|Param #|
 |:--- |:--- |---:|
-|**Layer1**-Convolution(Conv2D)|(None, 28, 28, 16)|1216|
+|**Layer1**-Convolution(Conv2D)|(None, 28, 28, 16)|1,216|
 |RELU Activation|(None, 28, 28, 16)|0|
 |Max pooling|(None, 14, 14, 16)|0|
-|**Layer2**-Convolution(Conv2D)|(None, 10, 10, 64)|25664|
+|**Layer2**-Convolution(Conv2D)|(None, 10, 10, 64)|25,664|
 |RELU Activation|(None, 10, 10, 64)|0|
 |Max pooling|(None, 5, 5, 64)|0|
 |Flatten|(None, 1600)| 0|
-|**Fully Connnected Layer1**|(None, 240)|384240|
+|**Fully Connnected Layer1**|(None, 240)|384,240|
 |RELU Activation|(None, 240)|0|
 |Dropout|(None, 240)|0|
-|**Fully Connnected Layer2**|(None, 84)|20244|
+|**Fully Connnected Layer2**|(None, 84)|20,244|
 |RELU Activation|(None, 84)|0|
 |Dropout|(None, 84)|0|
-|**Final fully Connnected Layer3**|(None, 43)|3655|
+|**Final fully Connnected Layer3**|(None, 43)|3,655|
 |   |**Total parameters:**  | 435,019|
 
 ### Model Training
+#### Initialization of Weights
+The standard (recommended) method of truncated normal distribution is used for initializing the weights. In this method, the weights will be distributed around 0 and any values farther than twice the standard deviation (-0.2 and 0.2) will be truncated.
+```python
+mu = 0
+sigma = 0.1
+conv1_W = tf.Variable(tf.truncated_normal(shape=(5, 5, 3, 16), mean = mu, stddev = sigma))
+..
+..
+conv2_W = tf.Variable(tf.truncated_normal(shape=(5, 5, 16, 64), mean = mu, stddev = sigma))
+..
+..
+
+```
+#### Key aspects
+| Parameter| Value| Description|
+|:--- |:--- |:---|
+| Dropout layers | keep_prob=0.6 | 2 Dropout layers after RELU in the FC layers led to a faster convergence and high validation accuracy of 99.6% |
+| Batch Normalization | False | Project targets were met by adding dropout layers.  |
+| Optimizer| Adam | |
+| Batch size | 128   | |
+| Epochs | 20 | |
+| Learning Rate | 0.001 | No adaptive learning rate |
 
 ### Solution Approach
+1. First, proper tensors are prepared to feed in the input values to our model.
+```python
+x = tf.placeholder(tf.float32, (None, 32, 32, 3))
+y = tf.placeholder(tf.int32, (None))
+```
+2. The prepared tensors are then passed onto a **Training Pipeline** which starts with a call to the adapted LeNet model. The model returns the `logits` which is an unscaled output of earlier layers. The function `tf.nn.softmax_cross_entropy_with_logits()` computes the cross entropy of the result after applying the softmax function. In simple terms, `tf.nn.softmax_cross_entropy_with_logits` normalizes the logits so that the output can be interpreted as probabilities.
+```python
+logits  = LeNet_adapted(x)
+cross_entropy = tf.nn.softmax_cross_entropy_with_logits(labels=one_hot_y, logits=logits)                
+```
+3. After creating the network, the loss is calculated and optimzier is attached to optimize the loss
+```python
+loss_operation = tf.reduce_mean(cross_entropy)
+optimizer = tf.train.AdamOptimizer(learning_rate = rate)
+training_operation = optimizer.minimize(loss_operation)
+```
+4. Once the training pipleine is prepared, a `tensorflow` session is created. All the required tensors are initialized and training pipeline is run with the call to `sess.run()`  
+```python
+with tf.Session() as sess:
+        sess.run(tf.global_variables_initializer())
+        ...
+        ...
+        for i in range(EPOCHS):
+            X_train, y_train = shuffle(X_train, y_train)
+            for offset in range(0, num_examples, BATCH_SIZE):
+                end = offset + BATCH_SIZE
+                batch_x, batch_y = X_train[offset:end], y_train[offset:end]
+                sess.run([training_operation], feed_dict={x: batch_x, y: batch_y, keep_prob:0.6 })
+        ...
+        ...
+```
+5. After the batch processing of the training is complete, the accuracy of the training and validation is calculated with the call to `evaluate(X_data, y_data)`
 
+### Final Results
+The validation accuracy during the training phase is plotted in the below figure:
+![validation_accuracy][image11]
+
+A summary of the accuracy metrics is shown in the below table:
+
+| Parameter| Accuracy|
+|:--- |:--- |
+|Training| 100% |
+|Validation| 99.4% |
+|Test | 96.4%  |
 
 ## Test model on new images
 ### Acquiring new images
 ### Performance on new images
 ### Model Certainty - Softmax Probabilities
-
-Creating a Great Writeup
----
-A great writeup should include the [rubric points](https://review.udacity.com/#!/rubrics/481/view) as well as your description of how you addressed each point.  You should include a detailed description of the code used in each step (with line-number references and code snippets where necessary), and links to other supporting documents or external references.  You should include images in your writeup to demonstrate how your code works with examples.  
-
-All that said, please be concise!  We're not looking for you to write a book here, just a brief description of how you passed each rubric point, and references to the relevant code :).
-
-You're not required to use markdown for your writeup.  If you use another method please just submit a pdf of your writeup.
-
-The Project
----
-The goals / steps of this project are the following:
-* Load the data set
-* Explore, summarize and visualize the data set
-* Design, train and test a model architecture
-* Use the model to make predictions on new images
-* Analyze the softmax probabilities of the new images
-* Summarize the results with a written report
-
-### Dependencies
-This lab requires:
-
-* [CarND Term1 Starter Kit](https://github.com/udacity/CarND-Term1-Starter-Kit)
-
-The lab environment can be created with CarND Term1 Starter Kit. Click [here](https://github.com/udacity/CarND-Term1-Starter-Kit/blob/master/README.md) for the details.
-
-### Dataset and Repository
-
-1. Download the data set. The classroom has a link to the data set in the "Project Instructions" content. This is a pickled dataset in which we've already resized the images to 32x32. It contains a training, validation and test set.
-2. Clone the project, which contains the Ipython notebook and the writeup template.
-```sh
-git clone https://github.com/udacity/CarND-Traffic-Sign-Classifier-Project
-cd CarND-Traffic-Sign-Classifier-Project
-jupyter notebook Traffic_Sign_Classifier.ipynb
-```
-
-### Requirements for Submission
-Follow the instructions in the `Traffic_Sign_Classifier.ipynb` notebook and write the project report using the writeup template as a guide, `writeup_template.md`. Submit the project code and writeup document.
-
-## How to write a README
-A well written README file can enhance your project and portfolio.  Develop your abilities to create professional README files by completing [this free course](https://www.udacity.com/course/writing-readmes--ud777).
