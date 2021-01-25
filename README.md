@@ -16,6 +16,9 @@
 [image9]: ./images/sample_images_after_normalization.png "Normalized images"
 [image10]: ./images/model_architecture.png "Model Architecture"
 [image11]: ./images/validation_accuracy.png "Validation Accuracy"
+[image12]: ./images/web_test_images.png "Web images"
+[image13]: ./images/web_test_images_after_normalising.png "Web images"
+[image14]: ./images/result_prediction.png "Result predictions"
 ## Overview
 ---
 The main objective of this project is to classify traffic signs using a Convolutional Neural Network (CNN). The classification model is trained based on the data from [German Traffic Sign Dataset](http://benchmark.ini.rub.de/?section=gtsrb&subsection=dataset). Given an input image of size 32x32x3, the project would classify the image as belonging to one of the 43 possible classes. The solution is implemented using the `Tensorflow` deep learning library framework.
@@ -241,6 +244,29 @@ A summary of the accuracy metrics is shown in the below table:
 |Test | 96.4%  |
 
 ## Test model on new images
+A set of 5 images are downloaded from web containing traffic signs from Germany are uploaded in the [test_images](./test_images/) folder. Three batches of web images are uploaded here.
+
 ### Acquiring new images
+1. The files are named in the following format:
+** <class-id>.jpg
+This enables an easier derivation of the labels.
+2. After loading the images, they are resized (not cropped) to 32x32.
+```python
+web_files = glob.glob(web_test_images)
+X_test_web = [ mpimg.imread('./' + image_file ) for image_file in web_files ]
+#scale to it 32x32
+X_test_web = [ cv2.resize(image, (32,32)) for image in X_test_web ]
+#the labels are derived from the filenames
+y_test_web = np.array([ os.path.splitext(os.path.basename(image_file))[0]
+                       for image_file in web_files ]).astype('uint8')
+```
+3. The input images are plot for reference:
+![validation_accuracy][image12]
+4. The input image is normalized before evaluation
+![validation_accuracy][image13]
+5. The logits from the evaluations are as below:
+![validation_accuracy][image14]
+
 ### Performance on new images
+
 ### Model Certainty - Softmax Probabilities
