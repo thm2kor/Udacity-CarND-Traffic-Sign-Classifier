@@ -10,8 +10,9 @@
 [image4]: ./images/distribution_validation_set.png "Distribution of classes in validation data set"
 [image5]: ./images/distribution_test_set.png "Distribution of classes in test data set"
 [image6]: ./images/sample_images_augmented_data.png "Random plot of augmented images"
-[image7]: ./images/distribution_training_set_after_augmentation.png "Distribution of classes after augmentation"
-[image8]: ./images/sample_images_after_normalization.png "Normalized images"
+[image7]: ./images/distribution_training_set_after_augmentation.png "Distribution of classes in training dataset after augmentation"
+[image8]: ./images/distribution_validation_set_after_augmentation.png "Distribution of classes in validation dataset after augmentation"
+[image9]: ./images/sample_images_after_normalization.png "Normalized images"
 
 ## Overview
 ---
@@ -92,7 +93,7 @@ After the splitting, the count of datasets are as follows:
 
 A final verification of the class distribution shows that the augmentation and the following train, test split has been effective:
 ![class_distribution_of_augmented_data][image7]
-
+![class_distribution_of_augmented_data][image8]
 ### Serializing the augmented images
 As an option, if the flag `use_augmented_datafile` is set to `True`, the augmented training data can be saved to a compressed pickle file. In this mode, instead of the standard training set, the compressed file with augmented data will be used for loading the training set. This was done only to save time during development time. This part is not part of the project goal.
 
@@ -102,7 +103,7 @@ As discussed earlier, for a faster convergence of the network, we need to normal
 result[index] = np.array((gray - np.min(gray)) / (np.max(gray) - np.min(gray)))
 ```   
 The above normalization would lead to a smaller standard deviation as shown in the below picture.
-![random_plot_of_norm_images][image8]
+![random_plot_of_norm_images][image9]
 
 Creating a Great Writeup
 ---
