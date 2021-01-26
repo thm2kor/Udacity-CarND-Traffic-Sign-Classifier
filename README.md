@@ -19,6 +19,15 @@
 [image12]: ./images/web_test_images.png "Web images"
 [image13]: ./images/web_test_images_after_normalising.png "Web images"
 [image14]: ./images/result_prediction.png "Result predictions"
+[image15]: ./images/web_test_images_probabilities.png "Result probabilities"
+[image16]: ./images/web_test_images_batch2.png "Web images"
+[image17]: ./images/web_test_images_after_normalising_batch2.png "Web images"
+[image18]: ./images/result_prediction_batch2.png "Result predictions"
+[image19]: ./images/web_test_images_probabilities_batch2.png "Result probabilities"
+[image20]: ./images/web_test_images_batch4.png "Web images"
+[image21]: ./images/web_test_images_after_normalising_batch4.png "Web images"
+[image22]: ./images/result_prediction_batch4.png "Result predictions"
+[image23]: ./images/web_test_images_probabilities_batch4.png "Result probabilities"
 ## Overview
 ---
 The main objective of this project is to classify traffic signs using a Convolutional Neural Network (CNN). The classification model is trained based on the data from [German Traffic Sign Dataset](http://benchmark.ini.rub.de/?section=gtsrb&subsection=dataset). Given an input image of size 32x32x3, the project would classify the image as belonging to one of the 43 possible classes. The solution is implemented using the `Tensorflow` deep learning library framework.
@@ -139,13 +148,13 @@ The LeNet architecture accepts a 32x32xC image as input, where C is the number o
 
 **Activation.** The above FC layer is followed by a RELU activation function *g(Wx + b)*. In the previous FC layer, the function *(Wx + b)* results in a linear projection from the input to the output. RELU function introduces non-linearity to the network again.
 
-**Dropout.** A dropout layer with `60% keep probability` is added after the RELU activation layer. This means that there is a 40% change that the output of a given neuron will be forced to 0. This avoid over-fitting of the network. This layer was added after noticing that the validation accuracy was not improving after 3 or 4 epochs. There was progressive improvement in validation accuracy after including the drop-outs.
+**Dropout.** A dropout layer with `40% keep probability` is added after the RELU activation layer. This means that there is a 60% change that the output of a given neuron will be forced to 0. This avoid over-fitting of the network. This layer was added after noticing that the validation accuracy was not improving after 3 or 4 epochs. There was progressive improvement in validation accuracy after including the drop-outs.
 
 **Layer 4: Fully Connected.** The output of the dropout layer to connected to the second fully connected layers with a width of  **84 outputs**, each representing a probability that a certain feature belongs to a label
 
 **Activation.** As before, to remove the non-linearity, a RELU activation layer is added.
 
-**Dropout.** Similar to layer 4, a dropout layer with `60% keep probability` is added after the RELU activation layer.
+**Dropout.** Similar to layer 4, a dropout layer with `40% keep probability` is added after the RELU activation layer.
 
 **Layer 5: Fully Connected (Logits).** This final layer returns the un-normalized predictions (logits) of the model, with a **output of 43**, each representing the logit values for a particular class.
 
@@ -208,13 +217,17 @@ y = tf.placeholder(tf.int32, (None))
 logits  = LeNet_adapted(x)
 cross_entropy = tf.nn.softmax_cross_entropy_with_logits(labels=one_hot_y, logits=logits)                
 ```
-3. After creating the network, the loss is calculated and optimzier is attached to optimize the loss
+3. The next step is to measure the inaccuracy of the prediction and use that value to calculate the model's loss and gradients. The 'tf.train.AdamOptimizer(learning_rate = rate)' is used to update the model's variables
 ```python
 loss_operation = tf.reduce_mean(cross_entropy)
 optimizer = tf.train.AdamOptimizer(learning_rate = rate)
 training_operation = optimizer.minimize(loss_operation)
 ```
-4. Once the training pipleine is prepared, a `tensorflow` session is created. All the required tensors are initialized and training pipeline is run with the call to `sess.run()`  
+4. Once the training pipleine is prepared, a `tensorflow` session is created. All the required tensors are initialized and training pipeline is run with the call to `sess.run()`
+- Iterate through the datasets  `EPOCH` number of times
+- For each `EPOCH`,  iterate through the X_Train in batches of `BATCH_SIZE`
+  - Shuffle the training dataset and prepare of Training data `X_train` and its corresponding label `y_train`
+  - Send this data to the Training pipeline as discussed in Steps 2 and 3
 ```python
 with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
@@ -239,16 +252,15 @@ A summary of the accuracy metrics is shown in the below table:
 
 | Parameter| Accuracy|
 |:--- |:--- |
-|Training| 100% |
+|Training| 99.9% |
 |Validation| 99.4% |
-|Test | 96.4%  |
+|Test | 96.8%  |
 
 ## Test model on new images
-A set of 5 images are downloaded from web containing traffic signs from Germany are uploaded in the [test_images](./test_images/) folder. Three batches of web images are uploaded here.
+A set of 5 images are downloaded from web containing traffic signs from Germany are uploaded in the [test_images](./test_images/batch5) folder.
 
 ### Acquiring new images
-1. The files are named in the following format:
-** <class-id>.jpg
+1. The files are named in the following format:*class-id.jpg* or *class-id.png*
 This enables an easier derivation of the labels.
 2. After loading the images, they are resized (not cropped) to 32x32.
 ```python
@@ -260,13 +272,23 @@ X_test_web = [ cv2.resize(image, (32,32)) for image in X_test_web ]
 y_test_web = np.array([ os.path.splitext(os.path.basename(image_file))[0]
                        for image_file in web_files ]).astype('uint8')
 ```
-3. The input images are plot for reference:
+3. The web images are plotted for reference:
 ![validation_accuracy][image12]
+
 4. The input image is normalized before evaluation
 ![validation_accuracy][image13]
-5. The logits from the evaluations are as below:
-![validation_accuracy][image14]
 
 ### Performance on new images
 
+The image is then fed to the model. The model returns the logit for each class.
+![validation_accuracy][image14]
+
+2. The `tf.nn.softmax` function converts these logits to a probability for each class
+![validation_accuracy][image15]
+
+3. The bar chart are filled with red col if the prediction does not match with the labels. The performance of this batch is therefore **80%**.
+
 ### Model Certainty - Softmax Probabilities
+From the probability histogram of Top 5 softmax function, it is clear that the predictions have a certainty rate of almost 100% in each of the case. I could think of two root causes:
+1. Model has been overfitted
+2. The input images are sharp enough
