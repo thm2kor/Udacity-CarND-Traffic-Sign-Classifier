@@ -286,9 +286,16 @@ The image is then fed to the model. The model returns the logit for each class.
 2. The `tf.nn.softmax` function converts these logits to a probability for each class
 ![validation_accuracy][image15]
 
-3. The bar chart are filled with red col if the prediction does not match with the labels. The performance of this batch is therefore **80%**.
+3. The bar chart are filled with red colour if the prediction does not match with the labels. In this batch of web images, the model incorrectly predicts the 80km/hr label as "60km/hr. The other signs are correctly predicted. The performance of this batch is therefore **80%**.
 
 ### Model Certainty - Softmax Probabilities
-From the probability histogram of Top 5 softmax function, it is clear that the predictions have a certainty rate of almost 100% in each of the case. I could think of two root causes:
-1. Model has been overfitted
-2. The input images are sharp enough
+The probability histogram as shown above is a good measure on the certainty of the model. The above batch of web images were taken in different lighting conditions. The corresponding softmax value for 80km/hr shows a low certainty (of 57%) as compared to the "No Entry" sign which is close to 100%.
+
+When i ran the model on images which are more clear and better lighting conditions, the softmax values were almost 100% for the predicted class.
+![validation_accuracy][image16]
+![validation_accuracy][image18]
+![validation_accuracy][image19]
+Another bacth of very high confidence prediction:
+![validation_accuracy][image20]
+![validation_accuracy][image22]
+![validation_accuracy][image23]
