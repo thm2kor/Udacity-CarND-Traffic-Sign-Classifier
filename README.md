@@ -60,7 +60,7 @@ An analysis on the distribution of classes with in the datasets shows a huge und
 ![class_distribution_of_training_data][image3]
 The above graphic illustrates the imbalance in the class distribution. For example, the class "Speed Limit 50kmph" is represented by more than 2000 images, while the "Speed Limit 20kmph" is represented by less than 200 images. Similar under-representation of classes is also seen in the validation and test datasets.
 ![class_distribution_of_validation_data][image4]
-Although the test dataset shows this discrepancy, for the intended purpose of the test data set, under-representation of classes is not an issue. So no further action is required for test dataset.
+Although the validation and  test dataset shows this discrepancy, for their intended purpose , under-representation of classes is not an issue. So no further action is required for validation and test dataset.
 ![class_distribution_of_test_data][image5]
 
 Before the training, the under-representation of the classes in training and validation datasets needs to be compensated using **image augmentation techniques**.
@@ -92,27 +92,16 @@ for x,y in datagen.flow(X_real, y_real, batch_size=len(y_real), seed=i):
 A randomly selected images from the Pseudo Training set is shown below:
 ![plot_of_augmented_data][image6]
 
-#### Splitting Training and Validation data
 After the augmentation the statistics on the datasets are as follows:
 - Training samples before augmentation : 34799
 - Validation samples before augmentation : 4410
 - Training samples after augmentation : **107500**
 - Validation samples after augmentation : **4410**
 
-As seen above, the training set has an average of 2500 images per class, the total images in the training set is (2500 * 43) = 107500. But the proportion between training samples and validation samples is heavily skewed. To balance the proportion of training and validation data, the `split_train_test()` function from `sklearn.model_selection` is used.
-```python
-from sklearn.model_selection import train_test_split
-# Random state with an integer will produce the same results across different calls
-X_train, X_valid, y_train, y_valid = train_test_split( X_train, y_train,
-test_size=0.2, shuffle=True, random_state=0)
-```
-After the splitting, the count of datasets are as follows:
-- Training samples after splitting : **86000**
-- Validation samples after splitting : **21500**
+As seen above, the training set has an average of 2500 images per class, the total images in the training set is (2500 * 43) = 107500.
 
-A final verification of the class distribution shows that the augmentation and the following train, test split has been effective:
+A final verification of the class distribution on training dataset shows that the augmentation  has been effective:
 ![class_distribution_of_augmented_data][image7]
-![class_distribution_of_augmented_data][image8]
 
 #### Serializing the augmented images
 As an option, if the flag `use_augmented_datafile` is set to `True`, the augmented training data can be saved to a compressed pickle file. In this mode, instead of the standard training set, the compressed file with augmented data will be used for loading the training set. This was done only to save time during development time. This part is not part of the project goal.
@@ -253,11 +242,17 @@ A summary of the accuracy metrics is shown in the below table:
 | Parameter| Accuracy|
 |:--- |:--- |
 |Training| 99.9% |
-|Validation| 99.4% |
-|Test | 96.8%  |
+|Validation| 98.5% |
+|Test | 97.2%  |
 
 ## Test model on new images
 A set of 5 images containing traffic signs from Germany were downloaded from web and uploaded in the [test_images](./test_images/batch5) folder.
+
+The above web images were chosen since they are captured in challenging situations:
+1. The 'No vehicles' sign and 'Move Ahead or Left' sign have  strong reflections on some part of the sign.
+2. The '80 kmph' and 'Move Right' signs are captured at an angle.
+3. The 'No Entry' sign is filled with a non-standard color.
+4. The images are not sharp. There are moderate jitters in all the images.
 
 ### Acquiring new images
 1. The files are named in the *class-id.jpg* format. The filename without the extension is considered as the label for the traffic sign.
@@ -285,10 +280,14 @@ The image is then fed to the model. The model returns the logit for each class.
 2. The `tf.nn.softmax` function converts these logits to a probability for each class
 ![validation_accuracy][image15]
 
-3. The bar chart are filled with red colour if the prediction does not match with the labels. In this batch of web images, the model incorrectly predicts the "80km/hr" label as "60km/hr". The other signs are correctly predicted. The performance of this batch is therefore **80%**.
+3. The bar chart are filled with red colour if the prediction does not match with the labels. In my first submission, i had incorrectly discarded the validation set. After augmenting the training dataset, i had split 20% of the train set and considered it as my new validation.
+Thanks to the feedback from Udacity reviewer, I corrected this part and kept the original validation data provided by the project. Just by keeping the original dataset , i could notice two noticable changes:
+1. My validation accuracy slightly reduced from 99.4% to 98.5%
+2. More importantly, the performance on the web images improved from 80% to 100%
+In this batch of web images, the model correctly predicted all the images. The performance of this batch is therefore **100%**.
 
 ### Model Certainty - Softmax Probabilities
-The probability histogram as shown above is a good measure on the certainty of the model. The above batch of web images were taken in different lighting conditions. The corresponding softmax value for 80km/hr shows a low certainty (of 57%) as compared to the "No Entry" sign which is close to 100%.
+The probability histogram as shown above is a good measure on the certainty of the model. The above batch of web images were taken in different lighting conditions. The histogram shows "80kmph" sign shows low certainty rate compared to the other images.
 
 When i ran the model on images which are more clear and better lighting conditions, the softmax values were almost 100% for the predicted class.
 ![validation_accuracy][image16]
