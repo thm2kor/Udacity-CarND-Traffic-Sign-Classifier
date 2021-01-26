@@ -54,13 +54,13 @@ The above graphic shows that the images are not sharp due to the relatively smal
 
 ## Design and Test a Model Architecture
 ### Preprocessing
-Before designing the data needs to preprocessed to make it suitable for deep learning. In the process of training the network, huge matrices of weights will be multiplied  and added to biases (another matrix) to cause activations that are then backpropogated with the gradients. A high value for the mean and variance of images will lead to huge computational costs and a possibility of vanishing and exploding gradients. To avoid this problem, the images needs to be normalized wherein the pixels are centered around the mean value of the image data. This process of **normalization** will be further discussed later. Before that, there is another issue which needs to be handled.
+Before designing the model, the data needs to preprocessed to make it suitable for deep learning. In the process of training the network, huge matrices of weights will be multiplied  and added to biases (another matrix) to cause activations that are then backpropogated with the gradients. A high value for the mean and variance of images will lead to huge computational costs and a possibility of vanishing and exploding gradients. To avoid this problem, the images needs to be normalized wherein the pixels are centered around the mean value of the image data. This process of **normalization** will be further discussed later. Before that, there is another issue which needs to be handled.
 
 An analysis on the distribution of classes with in the datasets shows a huge under-representation of some classes.
 ![class_distribution_of_training_data][image3]
 The above graphic illustrates the imbalance in the class distribution. For example, the class "Speed Limit 50kmph" is represented by more than 2000 images, while the "Speed Limit 20kmph" is represented by less than 200 images. Similar under-representation of classes is also seen in the validation and test datasets.
 ![class_distribution_of_validation_data][image4]
-Although the test dataset shows this discrepanies, for the purpose of the test data set, the case of class under-represetation is not an issue. So no further action is required for test dataset.
+Although the test dataset shows this discrepancy, for the intended purpose of the test data set, under-representation of classes is not an issue. So no further action is required for test dataset.
 ![class_distribution_of_test_data][image5]
 
 Before the training, the under-representation of the classes in training and validation datasets needs to be compensated using **image augmentation techniques**.
@@ -99,7 +99,7 @@ After the augmentation the statistics on the datasets are as follows:
 - Training samples after augmentation : **107500**
 - Validation samples after augmentation : **4410**
 
-As seen above, the training set has an average of 2500 images per class, the amount to 107500. But the proportion between Training samples and validation sample is heavily skewed. To balance the proportion of training and validation data, the `split_train_test()` function from `sklearn.model_selection` is used.
+As seen above, the training set has an average of 2500 images per class, the total images in the training set is (2500 * 43) = 107500. But the proportion between training samples and validation samples is heavily skewed. To balance the proportion of training and validation data, the `split_train_test()` function from `sklearn.model_selection` is used.
 ```python
 from sklearn.model_selection import train_test_split
 # Random state with an integer will produce the same results across different calls
@@ -134,23 +134,23 @@ The LeNet architecture accepts a 32x32xC image as input, where C is the number o
 
 #### Architecture
 ![Model architecture][image10]
-**Layer 1: Convolutional.** The starting point is a convolutional layer with `16 filters` (filter-depth), each filter sliding (more precisely 'convolving') a patch of `5x5 kernal` kernel across the `32x32x3 input image`. This layer uses `valid` padding with a `stride of 1`. The dimensions of the **output** of this layer will therefore be **28x28x16**, which is the so-called feature map that predicts the class to which each feature belongs. Since the parameters are shared across this spatial arrangement, the number of parameters will be filter size *(5x5x3) x 16 filter = 1210 Weights + 16 Biases = 1216 parameters*
+**Layer 1: Convolutional.** The starting point is a convolutional layer with `16 filters` (filter-depth), each filter sliding (more precisely 'convolving') a patch of `5x5 kernal`  across the `32x32x3 input image`. This layer uses `valid` padding with a `stride of 1`. The dimensions of the **output** of this layer will therefore be **28x28x16**, which is the so-called feature map that predicts the class to which each feature belongs. Since the parameters are shared across this spatial arrangement, the number of parameters will be *(5x5x3) x 16 filter = 1210 Weights + 16 Biases = 1216 parameters*
 
 **Activation:** Next, the output of the convolutional layer is activated with a RELU activation function, which adds non-linearity to the neural network
 
 **Pooling:** Next, the output from the activation layer is pooled using the *max-pooling* method with the most commonly used `kernel size of 2x2` and `stride size of 2x2` which gives a pooling **output of 14x14x16**. This pooling layer helps to reduce the number of parameters, memory footprint and amount of computation in the network. In addition, it helps to control overfitting. The pooling layer does not introduces any new parameters since it computes a fixed function of the input.
 
-**Layer 2: Convolutional** The network then runs through `another set of convolutional layer with 64 filters and patch size of 5x5, RELU activation and a max-pooling layer` giving an output of **5x5x64**. The number of parameters in this layer will be filter size * (5x5x16) x 64 filter = 25600 weights + 64 biases = 25664 parameters*
+**Layer 2: Convolutional** The network then runs through `another set of convolutional layer with 64 filters and patch size of 5x5, RELU activation and a max-pooling layer` giving an output of **5x5x64**. The number of parameters in this layer will be filter size *(5x5x16) x 64 filter = 25600 weights + 64 biases = 25664 parameters*
 
-**Flatten.** The output is flattened into a vector. The length of the vector is *5x5x64 = 1600*.
+**Flatten.** The output is flattened into a vector. The length of the vector is **5x5x64 = 1600**.
 
 **Layer 3: Fully Connected.** The vector is then passed on to a fully connected (FC) layer with a width of **240**, each representing a probability that a certain feature belongs to a label. The fully connected layer goes through its own backpropagation process to determine the most accurate weights. Each neuron receives weights that prioritize the most appropriate label. In simple words, while the Convolution layer extracts the feature maps, the fully connected layers classifies those extracted features. *(Wx + b)*
 
 **Activation.** The above FC layer is followed by a RELU activation function *g(Wx + b)*. In the previous FC layer, the function *(Wx + b)* results in a linear projection from the input to the output. RELU function introduces non-linearity to the network again.
 
-**Dropout.** A dropout layer with `40% keep probability` is added after the RELU activation layer. This means that there is a 60% change that the output of a given neuron will be forced to 0. This avoid over-fitting of the network. This layer was added after noticing that the validation accuracy was not improving after 3 or 4 epochs. There was progressive improvement in validation accuracy after including the drop-outs.
+**Dropout.** A dropout layer with `40% keep probability` is added after the RELU activation layer. This means that there is a 60% chance that the output of a given neuron will be forced to 0. This avoid over-fitting of the network. This layer was added after noticing that the validation accuracy was not improving after 3 or 4 epochs. There was progressive improvement in validation accuracy after including the drop-outs.
 
-**Layer 4: Fully Connected.** The output of the dropout layer to connected to the second fully connected layers with a width of  **84 outputs**, each representing a probability that a certain feature belongs to a label
+**Layer 4: Fully Connected.** The output of the dropout layer is connected to the second fully connected layer with a width of  **84 outputs**, each representing a probability that a certain feature belongs to a label
 
 **Activation.** As before, to remove the non-linearity, a RELU activation layer is added.
 
@@ -159,7 +159,7 @@ The LeNet architecture accepts a 32x32xC image as input, where C is the number o
 **Layer 5: Fully Connected (Logits).** This final layer returns the un-normalized predictions (logits) of the model, with a **output of 43**, each representing the logit values for a particular class.
 
 #### Output
-The model return the logits from the layer 5. A `softmax` function should be run on this value to map the result between 0 to 1. This will be discussed later.
+The model returns the logits from the layer 5. A `softmax` function should be run on this value to map the result between 0 to 1. This will be discussed later.
 
 #### Parameter Summary
 The table below summarizes the parameters of the model:
@@ -184,7 +184,7 @@ The table below summarizes the parameters of the model:
 
 ### Model Training
 #### Initialization of Weights
-The standard (recommended) method of truncated normal distribution is used for initializing the weights. In this method, the weights will be distributed around 0 and any values farther than twice the standard deviation (-0.2 and 0.2) will be truncated.
+The standard (recommended) method of truncated normal distribution is used for initializing the weights. In this method, the weights will be distributed around 0 . Any values farther than twice the standard deviation (-0.2 and 0.2) will be truncated.
 ```python
 mu = 0
 sigma = 0.1
@@ -199,15 +199,15 @@ conv2_W = tf.Variable(tf.truncated_normal(shape=(5, 5, 16, 64), mean = mu, stdde
 #### Key aspects
 | Parameter| Value| Description|
 |:--- |:--- |:---|
-| Dropout layers | keep_prob=0.6 | 2 Dropout layers after RELU in the FC layers led to a faster convergence and high validation accuracy of 99.6% |
-| Batch Normalization | False | Project targets were met by adding dropout layers.  |
-| Optimizer| Adam | |
-| Batch size | 128   | |
-| Epochs | 20 | |
+| Dropout layers | keep_prob=0.4 | 2 Dropout layers after RELU in the FC layers led to a faster convergence and high validation accuracy of 99.4% |
+| Batch Normalization | False | Project targets were met by adding dropout layers.   |
+| Optimizer| Adam | Default suggested in the project|
+| Batch size | 128   | Default suggested in the project|
+| Epochs | 20 | Accuracy was stable within 10 EPOCHS |
 | Learning Rate | 0.001 | No adaptive learning rate |
 
 ### Solution Approach
-1. First, proper tensors are prepared to feed in the input values to our model.
+1. First, proper tensors are prepared to feed in the input values to the adapted LeNet model.
 ```python
 x = tf.placeholder(tf.float32, (None, 32, 32, 3))
 y = tf.placeholder(tf.int32, (None))
@@ -217,17 +217,17 @@ y = tf.placeholder(tf.int32, (None))
 logits  = LeNet_adapted(x)
 cross_entropy = tf.nn.softmax_cross_entropy_with_logits(labels=one_hot_y, logits=logits)                
 ```
-3. The next step is to measure the inaccuracy of the prediction and use that value to calculate the model's loss and gradients. The 'tf.train.AdamOptimizer(learning_rate = rate)' is used to update the model's variables
+3. The next step is to measure the inaccuracy of the prediction and use that value to calculate the model's loss and gradients. The `tf.train.AdamOptimizer(learning_rate = rate)` is used to update the model's variables
 ```python
 loss_operation = tf.reduce_mean(cross_entropy)
 optimizer = tf.train.AdamOptimizer(learning_rate = rate)
 training_operation = optimizer.minimize(loss_operation)
 ```
-4. Once the training pipleine is prepared, a `tensorflow` session is created. All the required tensors are initialized and training pipeline is run with the call to `sess.run()`
-- Iterate through the datasets  `EPOCH` number of times
+4. Once the training pipleine is prepared, a `tensorflow` session is created. All the required tensors are initialized and training pipeline is run with the call to `sess.run()` . Within this session:
+- The training dataset is iterated `EPOCH` number of times
 - For each `EPOCH`,  iterate through the X_Train in batches of `BATCH_SIZE`
   - Shuffle the training dataset and prepare of Training data `X_train` and its corresponding label `y_train`
-  - Send this data to the Training pipeline as discussed in Steps 2 and 3
+  - Send this data to the training pipeline as discussed in Steps 2 and 3
 ```python
 with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
@@ -242,7 +242,7 @@ with tf.Session() as sess:
         ...
         ...
 ```
-5. After the batch processing of the training is complete, the accuracy of the training and validation is calculated with the call to `evaluate(X_data, y_data)`
+5. After the batch processing of the training is complete, the accuracy of the training and validation is calculated with the call to `evaluate(X_data, y_data)`. This function is also used for the evaluation of the final results on the test data as well as the images from the internet.
 
 ### Final Results
 The validation accuracy during the training phase is plotted in the below figure:
@@ -257,11 +257,10 @@ A summary of the accuracy metrics is shown in the below table:
 |Test | 96.8%  |
 
 ## Test model on new images
-A set of 5 images are downloaded from web containing traffic signs from Germany are uploaded in the [test_images](./test_images/batch5) folder.
+A set of 5 images containing traffic signs from Germany were downloaded from web and uploaded in the [test_images](./test_images/batch5) folder.
 
 ### Acquiring new images
-1. The files are named in the following format:*class-id.jpg* or *class-id.png*
-This enables an easier derivation of the labels.
+1. The files are named in the *class-id.jpg* format. The filename without the extension is considered as the label for the traffic sign.
 2. After loading the images, they are resized (not cropped) to 32x32.
 ```python
 web_files = glob.glob(web_test_images)
@@ -286,7 +285,7 @@ The image is then fed to the model. The model returns the logit for each class.
 2. The `tf.nn.softmax` function converts these logits to a probability for each class
 ![validation_accuracy][image15]
 
-3. The bar chart are filled with red colour if the prediction does not match with the labels. In this batch of web images, the model incorrectly predicts the 80km/hr label as "60km/hr. The other signs are correctly predicted. The performance of this batch is therefore **80%**.
+3. The bar chart are filled with red colour if the prediction does not match with the labels. In this batch of web images, the model incorrectly predicts the "80km/hr" label as "60km/hr". The other signs are correctly predicted. The performance of this batch is therefore **80%**.
 
 ### Model Certainty - Softmax Probabilities
 The probability histogram as shown above is a good measure on the certainty of the model. The above batch of web images were taken in different lighting conditions. The corresponding softmax value for 80km/hr shows a low certainty (of 57%) as compared to the "No Entry" sign which is close to 100%.
@@ -301,6 +300,6 @@ Another bacth of very high confidence prediction:
 ![validation_accuracy][image23]
 
 ## Summary
-Overall it was a great learning experience. The fine-tuning of the hyperparameters and the analysis of the wrong predictions took a lot of time, but in the end it improved my intuition towards the convergence process and the how tensorflow handles the network calculations.
-I feel that the high accuracy in the training phase might have led to a over-fitting scenario. Though I have considered some measures (Dropout with 50% keep) in the model, I feel that there should more options to avoid the over-fitting.
-The fact that the dropout layers gave the best accuracy within 10 Epochs gave me the confidence that the model is well defined. I did not have the time to experiment with Xavier method for weights initialization. Similarly I did not experiment with the batch normalization. For more complex learning problems, I would be consider batch normalization.
+- Overall it was a great learning experience. The fine-tuning of the hyperparameters and the analysis of the wrong predictions took a lot of time, but in the end it improved my intuition towards the convergence process and the how `tensorflow` handles the network calculations.
+- I feel that the high accuracy in the training phase might have led to a over-fitting scenario. Though I have considered some measures (Dropout with 50% keep) in the model, I feel that there should more options to avoid the over-fitting.
+- The fact that the dropout layers gave the best accuracy within 10 Epochs gave me the confidence that the convergence is working well. Once the model reached the validation accuracy of above 98%, I did not have the motivation to experiment on alternate options like Xavier method for weights initialization, batch normalization or adaptive learning rate for training. For more complex learning problems, I would be consider using them.
