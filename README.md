@@ -299,3 +299,8 @@ Another bacth of very high confidence prediction:
 ![validation_accuracy][image20]
 ![validation_accuracy][image22]
 ![validation_accuracy][image23]
+
+## Summary
+Overall it was a great learning experience. The fine-tuning of the hyperparameters and the analysis of the wrong predictions took a lot of time, but in the end it improved my intuition towards the convergence process and the how tensorflow handles the network calculations.
+I feel that the high accuracy in the training phase might have led to a over-fitting scenario. Though I have considered some measures (Dropout with 50% keep) in the model, I feel that there should more options to avoid the over-fitting.
+The fact that the dropout layers gave the best accuracy within 10 Epochs gave me the confidence that the model is well defined. I did not have the time to experiment with Xavier method for weights initialization. Similarly I did not experiment with the batch normalization. For more complex learning problems, I would be consider batch normalization.
