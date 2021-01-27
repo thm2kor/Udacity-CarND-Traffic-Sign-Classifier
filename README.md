@@ -28,6 +28,7 @@
 [image21]: ./images/web_test_images_after_normalising_batch4.png "Web images"
 [image22]: ./images/result_prediction_batch4.png "Result predictions"
 [image23]: ./images/web_test_images_probabilities_batch4.png "Result probabilities"
+[image24]: ./images/confusion_matrix.png "Confusion matrix"
 ## Overview
 ---
 The main objective of this project is to classify traffic signs using a Convolutional Neural Network (CNN). The classification model is trained based on the data from [German Traffic Sign Dataset](http://benchmark.ini.rub.de/?section=gtsrb&subsection=dataset). Given an input image of size 32x32x3, the project would classify the image as belonging to one of the 43 possible classes. The solution is implemented using the `Tensorflow` deep learning library framework.
@@ -236,6 +237,10 @@ with tf.Session() as sess:
 ### Final Results
 The validation accuracy during the training phase is plotted in the below figure:
 ![validation_accuracy][image11]
+
+In addition, the confusion matrix is also plotted, which summarizes the performance of the model:
+![validation_accuracy][image24]
+In the above matrix, the each diagonal represents that the count of correct predictions for that  respective class. The other entries represents an error in prediction. When the total count of error exceeds 10, the number is marked red. These cases needs to be further analysed.
 
 A summary of the accuracy metrics is shown in the below table:
 
