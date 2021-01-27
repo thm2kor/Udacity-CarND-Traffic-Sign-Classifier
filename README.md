@@ -63,7 +63,7 @@ The above graphic illustrates the imbalance in the class distribution. For examp
 Although the validation and  test dataset shows this discrepancy, for their intended purpose , under-representation of classes is not an issue. So no further action is required for validation and test dataset.
 ![class_distribution_of_test_data][image5]
 
-Before the training, the under-representation of the classes in training and validation datasets needs to be compensated using **image augmentation techniques**.
+Before the training, the under-representation of the classes in training dataset needs to be compensated using **image augmentation techniques**.
 
 #### Image Augmentation
 Image Augmentation is the process of taking images that are already in a training dataset and adjusting them to create many adapted versions of the same image. This project uses `keras` deep learning library for augmenting images:
